@@ -114,9 +114,9 @@ export class ValorantAuth {
             pasToken: typeof pasToken === 'undefined'
                 ? (await Authorization.fetchPas(accessToken)).data
                 : pasToken,
-            entitlementsToken: typeof entitlementsToken === 'undefined'
+            /* entitlementsToken: typeof entitlementsToken === 'undefined'
                 ? (await Authorization.fetchEntitlements(accessToken)).data.entitlements_token
-                : entitlementsToken
+                : entitlementsToken */
         };
     
         // decode the pas token
