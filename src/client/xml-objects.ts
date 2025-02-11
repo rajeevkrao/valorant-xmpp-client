@@ -73,6 +73,14 @@ export const setupSession = () => new Object({
     }
 });
 
+export const sendMessage = (jid: string, message: string) => new Object({
+    'message': {
+        '@_to': jid,
+        '@_type': "chat",
+        'body': message
+    }
+})
+
 export const fetchFriends = () => new Object({
     'iq': {
         '@_type': "get",
