@@ -8,6 +8,7 @@ import { formatPresence, PresenceOutput } from "./presence/presence";
 import { Jid, parseJid } from "../helpers/parsers";
 import { PresenceBuilder, KeystonePresenceBuilder } from "../builders/builders";
 import { formatRoster, RosterOutput } from "./friends/friends";
+import { formatIq, IqOutput } from "./iq/iq";
 
 const defaultConfig: ValorantXmppConfig = {
     autoReconnect: true,
@@ -111,8 +112,13 @@ export class ValorantXmppClient extends EventEmitter {
                 this.emit('message', data);
                 break;
             case "iq":
-                const roster = formatRoster(data);
-                this.emit('roster', roster);
+                const iq = formatIq(data);
+                this.emit('iq', data);
+                if(iq.type === 'result'){
+                    const roster = formatRoster(data);
+                    this.friends = roster.roster;
+                    this.emit('roster', roster.roster);
+                }
 
                 // if(roster.type === 'result')
                 //     this.friends = roster.roster;
@@ -251,6 +257,7 @@ interface ValorantXmppClientEvents {
     'ready': () => void;
     'presence': (presence: PresenceOutput) => void;
     'message': (message: any) => void;
+    'iq': (iq: IqOutput) => void;
     'roster': (roster: RosterOutput) => void;
     'error': (error: Error) => void;
 }
