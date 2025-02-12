@@ -49,7 +49,7 @@ export class ValorantAuth {
     _xmppClientInstance: ValorantXmppClient;
     _config: ValorantAuthConfig;
 
-    _reauthInterval: NodeJS.Timer; 
+    _reauthInterval: NodeJS.Timeout; 
 
     get tokenStorage() {
         return this._xmppClientInstance.tokenStorage;
