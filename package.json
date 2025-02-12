@@ -7,7 +7,7 @@
   "scripts": {
     "build": "tsc",
     "test": "tsc -w",
-    "mock": "nodemon ./testbot/index"
+    "mock": "cd testbot && nodemon index.ts"
   },
   "author": "ev3nvy",
   "license": "MIT",
