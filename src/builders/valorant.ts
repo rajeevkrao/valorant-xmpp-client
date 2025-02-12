@@ -38,7 +38,7 @@ const defaultPresenceObject = (): ValorantPresenceObject => new Object({
     maxPartySize: 5,
     queueId: 'unrated',
     partyLFM: false,
-    partyClientVersion: 'release-04.03-shipping-6-671292',
+    partyClientVersion: 'release-10.02-shipping-2-3208409',
     partySize: 1,
     tournamentId: '',
     rosterId: '',
@@ -48,7 +48,7 @@ const defaultPresenceObject = (): ValorantPresenceObject => new Object({
     playerTitleId: '',
     preferredLevelBorderId: '',
     accountLevel: 1,
-    competitiveTier: Ranks.IRON1,
+    competitiveTier: Ranks.UNRANKED,
     leaderboardPosition: 0,
     isIdle: false
 });
