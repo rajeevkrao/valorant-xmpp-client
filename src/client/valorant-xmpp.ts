@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 
 import { CookieAuth, PasswordAuth, TokenAuth, TokenStorage, ValorantAuth, ValorantAuthConfig } from "./valorant-auth";
 import { XmppClient } from "./xmpp";
-import { clientName, fetchFriends, mechanism, rxep, setupSession, xmlDeclaration } from "./xml-objects";
+import { clientName, fetchFriends, mechanism, rxep, sendFriendRequest, removeOutgoingFriendRequest, setupSession, xmlDeclaration } from "./xml-objects";
 import { formatPresence, PresenceOutput } from "./presence/presence";
 import { Jid, parseJid } from "../helpers/parsers";
 import { PresenceBuilder, KeystonePresenceBuilder } from "../builders/builders";
@@ -245,6 +245,18 @@ export class ValorantXmppClient extends EventEmitter {
         await (await this.getXmppInstance()).sendXml(fetchFriends());
         return this.friends;
     };
+
+    acceptAllFriendRequests = async () => {
+        const friends = this.friends.filter(friend => friend.isIncoming);
+        for(const friend of friends)
+            await (await this.getXmppInstance()).sendXml(sendFriendRequest(friend.name, friend.tagline));
+    }
+
+    removeAllSentRequests = async() => {
+        const friends = this.friends.filter(friend => friend.isOutgoing);
+        for(const friend of friends)
+            await (await this.getXmppInstance()).sendXml(removeOutgoingFriendRequest(friend.jid.jid));
+    }
 
     end = () => {
         this._isCloseRequested = true;
