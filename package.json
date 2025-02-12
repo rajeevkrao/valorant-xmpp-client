@@ -7,9 +7,10 @@
   "scripts": {
     "build": "tsc",
     "test": "tsc -w",
-    "mock": "cd testbot && nodemon index.ts"
+    "mock": "cd testbot && nodemon index.ts --delay 30",
+    "postinstall": "tsc"
   },
-  "author": "ev3nvy",
+  "author": "ev3nvy + rajeevkrao",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^17.0.18",
