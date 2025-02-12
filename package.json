@@ -6,12 +6,14 @@
   "types": "built/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "tsc -w"
+    "test": "tsc -w",
+    "mock": "nodemon ./testbot/index"
   },
   "author": "ev3nvy",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^17.0.18",
+    "nodemon": "^3.1.9",
     "typescript": "^4.5.5"
   },
   "dependencies": {
