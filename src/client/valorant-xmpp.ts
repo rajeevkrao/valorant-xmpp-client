@@ -1,4 +1,3 @@
-import { TLSSocket } from "tls";
 import { EventEmitter } from "events";
 
 import { CookieAuth, PasswordAuth, TokenAuth, TokenStorage, ValorantAuth, ValorantAuthConfig } from "./valorant-auth";
@@ -9,12 +8,15 @@ import { Jid, parseJid } from "../helpers/parsers";
 import { PresenceBuilder, KeystonePresenceBuilder } from "../builders/builders";
 import { formatRoster, RosterOutput } from "./friends/friends";
 import { formatIq, IqOutput } from "./iq/iq";
+import type { ItemObject } from "../models/item";
 
 const defaultConfig: ValorantXmppConfig = {
     autoReconnect: true,
     maxReconnectAttempts: 5,
     reconnectAttemptsTimeframe: 15000,
-    updatePresenceInterval: 120000
+    updatePresenceInterval: 120000,
+    autoAcceptIncomingRequests: true,
+    verbose: false,
 }
 
 const defaultTokenStorage: TokenStorage = {
@@ -104,6 +106,7 @@ export class ValorantXmppClient extends EventEmitter {
     }
 
     async _handleData(type: string, data: any) {
+        this.log({type, data})
         switch(type) {
             case "presence":
                 this.emit('presence', formatPresence(data));
@@ -114,12 +117,23 @@ export class ValorantXmppClient extends EventEmitter {
             case "iq":
                 const iq = formatIq(data);
                 this.emit('iq', data);
-                if(iq.type === 'result'){
-                    const roster = formatRoster(data);
-                    this.friends = roster.roster;
-                    this.emit('roster', roster.roster);
+                if(iq.queryType === 'jabber:iq:riotgames:roster') {
+                    if(iq.type === 'result') {
+                        const items = iq.query.item as ItemObject[]
+                            const roster = formatRoster(data);
+                            this.friends = roster.roster;
+                            if(this._config.autoAcceptIncomingRequests) await this.acceptAllFriendRequests();
+                            this.emit('roster', roster.roster);
+                    }
+                    if(iq.type === 'set') {
+                        const item = iq.query.item as ItemObject
+                        if(item.subscription === 'pending_in') {
+                            if(this._config.autoAcceptIncomingRequests) await this.sendFriendRequest(item.id.name, item.id.tagline);
+                            this.emit('incomingRequest', data)
+                        }
+                    }
                 }
-
+                
                 // if(roster.type === 'result')
                 //     this.friends = roster.roster;
                 // else if (roster.type === 'set') {
@@ -246,6 +260,10 @@ export class ValorantXmppClient extends EventEmitter {
         return this.friends;
     };
 
+    sendFriendRequest = async (name: string, tagline: string) => {
+        await (await this.getXmppInstance()).sendXml(sendFriendRequest(name, tagline));
+    }
+
     acceptAllFriendRequests = async () => {
         const friends = this.friends.filter(friend => friend.isIncoming);
         for(const friend of friends)
@@ -263,12 +281,17 @@ export class ValorantXmppClient extends EventEmitter {
         this._xmppInstance.end();     
         this.removeAllListeners();
     }
+
+    log = (message: any) => {
+        if (this._config.verbose) console.log(message);
+    };
 }
 
 interface ValorantXmppClientEvents {
     'ready': () => void;
     'presence': (presence: PresenceOutput) => void;
     'message': (message: any) => void;
+    'incomingRequest': (data: any) => void;
     'iq': (iq: IqOutput) => void;
     'roster': (roster: RosterOutput) => void;
     'error': (error: Error) => void;
@@ -298,6 +321,8 @@ interface ValorantXmppConfig {
     reconnectAttemptsTimeframe?: number
     authConfig?: ValorantAuthConfig
     updatePresenceInterval?: number | Function
+    autoAcceptIncomingRequests?: boolean
+    verbose?: boolean
 }
 
 interface Account {
